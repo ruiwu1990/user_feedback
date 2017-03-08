@@ -2,13 +2,22 @@ This project is a machine learning application using Apache Spark ML.
 
 Here are the possible methods:
 ```
-http://spark.apache.org/docs/latest/mllib-classification-regression.html
+http://spark.apache.org/docs/latest/ml-classification-regression.html#logistic-regression
 ```
 
 #Quick Start
-Here is the command to install the requirements
+First create a virtual environment
 ```
-sudo pip install requirements.txt
+mkvirtualenv -p python2.7 dev
+```
+
+If you have created the virtual environment, then use this commend to enter it
+```
+virtualenv dev && source dev/bin/activate
+```
+Here is the command to install the requirements in the dev virtual environment
+```
+pip install -r requirements.txt
 ```
 Here is the command to set up and run the program
 ```
