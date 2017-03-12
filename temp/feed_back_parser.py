@@ -18,10 +18,19 @@ def feedback_processing(input_file,output_file):
 	fp_output = open(output_file,'w')
 
 	# replace replace_pair[0] with replace_pair[1]
-	replace_pair = [['isn\'t','don\'t','aren\'t','cannot','can\'t'],'not']
+	replace_pair = [[['isn\'t','don\'t','aren\'t','cannot','can\'t','cant','dont','arent','isnt'],'not'],
+					[['too','really','super','extremely'],'very'],
+					[['long'],'slow'],
+					[['terrible'],'very slow'],
+					[['ages'],'very slow'],
+					[['satisfactory','decent','ok','satisfied','happy'],'good'],
+					[['excellent','superb','outstanding','fantastic','awesome','great'],'very good'],
+					[['quick'],'fast']]
 
-	unnecessary_words = ['we','i','you','should','like','would','may',
-	                    'maybe','to','server','service','queue','is',
+	unnecessary_words = ['we','i','you','my','should',
+						'its','it\'s','im','i\'m','youre','you\'r',
+						'like','would','may','our','your','system','thing'
+	                    'maybe','to','server','service','queue','is','everything',
 	                    'are','am','the','be','maight','can']
 	
 	# this arr records possible words in the sentence
@@ -38,27 +47,31 @@ def feedback_processing(input_file,output_file):
 		final_line_arr = []
 
 		for sentence in temp_sentences:
-			final_sentence_arr = []
-			# final_sentence = ''
-			# remove period and collect words in the sentence
-			words = sentence.replace('.','').split()
+			# assumption 1: question sentence means disappointed
+			if '?' in sentence:
+				final_line_arr.append('slow')
+			else:	
+				final_sentence_arr = []
+				# remove period and collect words in the sentence
+				words = sentence.replace('.','').split()
 
-			for word in words:
-				# step 2: replace words in the sentences
-				# replace word with "not"
-				if word in replace_pair[0]:
-					final_sentence_arr.append(replace_pair[1])
-				
-				# # step 3: remove unnecessary words
-				elif word not in unnecessary_words:
-					final_sentence_arr.append(word)
+				for word in words:
+					# step 2: replace synonyms in the sentences
+					# replace word with "not"
+					for word_pair in replace_pair:
+						if word in word_pair[0]:
+							final_sentence_arr.append(word_pair[1])
+					
+					# step 3: remove unnecessary words
+					if word not in unnecessary_words:
+						final_sentence_arr.append(word)
 
-			final_line_arr.append(' '.join([str(i) for i in final_sentence_arr]))
+				final_line_arr.append(' '.join([str(i) for i in final_sentence_arr]))
 
-			# fill array with possible words
-			for word in final_sentence_arr:
-				if word not in possible_words:
-					possible_words.append(word)
+				# fill array with possible words
+				for word in final_sentence_arr:
+					if word not in possible_words:
+						possible_words.append(word)
 		# step 4: write results into another file
 		fp_output.write(','.join(final_line_arr)+'\n')
 
@@ -113,6 +126,7 @@ def feedback_training_input_generator(input_file,output_file,possible_words):
 	fp_output.write(','.join(new_title_arr)+'\n')
 
 	words_num = len(possible_words)
+	# four categories
 	# very slow col, it belongs 0 category
 	temp_list = pd_input['very slow'].tolist()
 	fp_output.write(write_csv_col_into_files(temp_list,'0',words_num))
@@ -126,8 +140,22 @@ def feedback_training_input_generator(input_file,output_file,possible_words):
 	temp_list = pd_input['very fast'].tolist()
 	fp_output.write(write_csv_col_into_files(temp_list,'3',words_num))
 	# want to pay more for better performance col, it belongs 4 category
-	temp_list = pd_input['very slow'].tolist()
-	fp_output.write(write_csv_col_into_files(temp_list,'4',words_num))
+	# temp_list = pd_input[' want to pay more for better performance'].tolist()
+	# fp_output.write(write_csv_col_into_files(temp_list,'4',words_num))
+
+	# # two categories
+	# # very slow col, it belongs 0 category
+	# temp_list = pd_input['very slow'].tolist()
+	# fp_output.write(write_csv_col_into_files(temp_list,'0',words_num))
+	# # slow col, it belongs 1 category
+	# temp_list = pd_input['slow'].tolist()
+	# fp_output.write(write_csv_col_into_files(temp_list,'0',words_num))
+	# # fast col, it belongs 2 category
+	# temp_list = pd_input['fast'].tolist()
+	# fp_output.write(write_csv_col_into_files(temp_list,'1',words_num))
+	# # very fast col, it belongs 3 category
+	# temp_list = pd_input['very fast'].tolist()
+	# fp_output.write(write_csv_col_into_files(temp_list,'1',words_num))
 
 	fp_output.close()
 	
@@ -178,7 +206,7 @@ def convert_csv_into_libsvm(input_file,output_file,label_index=0,skip_headers=Tr
 # ------------
 
 # possible_words = feedback_processing('feed_back_rui.csv','temp.csv')
-possible_words = feedback_processing('feed_back.csv','temp.csv')
+possible_words = feedback_processing('feed_back_short.csv','temp.csv')
 feedback_training_input_generator('temp.csv','input_ml.csv',possible_words)
 convert_csv_into_libsvm('input_ml.csv','temp_libsvm.txt')
 
